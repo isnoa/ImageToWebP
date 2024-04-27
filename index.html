@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<input type="file" onchange="handleFileChange(this.files[0])" />
+<br>
+<img id="outputImage"/>
+
+<script>
+const MAX_WIDTH = 2000;
+const MAX_HEIGHT = 2000;
+
+async function handleFileChange(file) {
+    const blob = await processFile(file);
+    const url = URL.createObjectURL(blob);
+    document.getElementById('outputImage').src = url;
+}
+
+function processFile(file) {
+    return new Promise(function(resolve, reject) {
+        let rawImage = new Image();
+        
+        let canvas = document.createElement('canvas');
+        let ctx = canvas.getContext("2d");
+        
+        rawImage.onload = function() {
+            var width = rawImage.width;
+            var height = rawImage.height;
+            
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            ctx.drawImage(rawImage, 0, 0, width, height);
+            canvas.toBlob(function(blob) {
+                resolve(blob);
+            }, "image/webp");
+        };
+        
+        rawImage.src = URL.createObjectURL(file);
+        rawImage.crossOrigin = 'Anonymous';
+    });
+}
+</script>
+
+</body>
+</html>
